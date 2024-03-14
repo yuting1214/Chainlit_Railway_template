@@ -1,4 +1,4 @@
-# Chainlit in Railway
+# Chainlit in Railway 👋
 
 **Deploy production-ready Conversational AI applications with Railway in minutes, not weeks ⚡️**
 
