@@ -9,6 +9,6 @@
 - ✅ Custom frontend (build your own agentic experience)
 - ✅ API Endpoint
 
-For a step-by-step guide to deploying on [Railway](), see [this]() post, or click the button below.
+For a step-by-step guide to deploying on [Railway](https://railway.app/template/atS4DW?referralCode=jk_FgY), see [this]() post, or click the button below.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://github.com/yuting1214/Chainlit_Railway_template)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/atS4DW?referralCode=jk_FgY)
