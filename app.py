@@ -11,24 +11,24 @@ async def on_chat_start():
         [{"role": "system", "content": "You are a helpful assistant."}],
     )
     app_user = cl.user_session.get("user")
-    await cl.Message(f"Hello {app_user.identifier}").send()
+    await cl.Message(f"Hello User").send()
 
 #|--------------------------------------------------------------------------|
 #|                               Chat                                       |
 #|--------------------------------------------------------------------------|
 @cl.on_message
-async def main(message: cl.Message):
+async def main(user_input: cl.Message):
     message_history = cl.user_session.get("message_history")
-    message_history.append({"role": "user", "content": message.content})
+    message_history.append({"role": "user", "content": user_input.content})
 
-    msg = cl.Message(content="")
-    await msg.send()
+    llm_output = cl.Message(content="")
+    await llm_output.send()
 
-    stream = await openai_chatbot_chain(message.content, message_history)
+    stream = await openai_chatbot_chain(message_history)
 
     async for part in stream:
         if token := part.choices[0].delta.content or "":
-            await msg.stream_token(token)
+            await llm_output.stream_token(token)
 
-    message_history.append({"role": "assistant", "content": msg.content})
-    await msg.update()
+    message_history.append({"role": "assistant", "content": llm_output.content})
+    await llm_output.update()
