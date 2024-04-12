@@ -1,3 +1,7 @@
 openai
 python-dotenv
 chainlit
+
+farm-haystack[inference]
+datasets
+chainlit
