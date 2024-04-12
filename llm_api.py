@@ -17,8 +17,10 @@ model_config = {
 }
 
 async def openai_chatbot_chain(messages: List[Dict[str, str]], settings: dict = model_config):
-    client = AsyncOpenAI(api_key=os.getenv('sk-HYQ6sgvzSXAYBW0xrWAST3BlbkFJkWVYBtLlC0rKSDfNSUDCMage'))
+    client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     stream_response = await client.chat.completions.create(
         messages=messages, stream=True, **settings
     )
     return stream_response
+
+  
