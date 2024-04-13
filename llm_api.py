@@ -10,91 +10,86 @@ from haystack.document_stores import InMemoryDocumentStore
 from haystack.nodes import BM25Retriever, PromptNode
 from haystack.pipelines import DocumentSearchPipeline
 import chainlit as cl
-''
-# Carregar variáveis de ambiente
+
+# Load environment variables
 _ = load_dotenv('.env')
 
-# Chave da API da OpenAI
-openai_api_key = os.environ.get("OPENAI_API_KEY")
-if not openai_api_key:
-    raise ValueError("Por favor, defina a variável de ambiente OPENAI_API_KEY")
-
-# Configurações do modelo OpenAI
-config_modelo = {
+# OpenAI model configuration
+model_config = {
     "model": "gpt-3.5-turbo",
     "temperature": 0.7,
     "max_tokens": 256,
-    "stop_words": ["Observação:"],
+    "stop_words": ["Observation:"],
 }
 
-# Função para interagir com o chatbot da OpenAI de forma assíncrona
-async def openai_chatbot_chain(mensagens: List[Dict[str, str]], settings: dict = config_modelo):
-    cliente = AsyncOpenAI(api_key=openai_api_key)
-    resposta_stream = await cliente.chat.completions.create(
-        messages=mensagens, stream=True, **settings
+# Function to interact with the OpenAI chatbot asynchronously
+async def openai_chatbot_chain(messages: List[Dict[str, str]], settings: dict = model_config):
+    client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+    stream_response = await client.chat.completions.create(
+        messages=messages, stream=True, **settings
     )
-    return resposta_stream
+    return stream_response
 
-# Função para obter o recuperador de documentos
+# Function to get the document retriever
 @cl.cache
-def obter_recuperador():
-    armazenamento_documentos = InMemoryDocumentStore(use_bm25=True)
-    conjunto_dados = load_dataset("bilgeyucel/seven-wonders", split="train")
-    armazenamento_documentos.write_documents(conjunto_dados)
-    return BM25Retriever(armazenamento_documentos)
+def get_retriever():
+    document_store = InMemoryDocumentStore(use_bm25=True)
+    dataset = load_dataset("bilgeyucel/seven-wonders", split="train")
+    document_store.write_documents(dataset)
+    return BM25Retriever(document_store)
 
-# Função para obter o agente conversacional
+# Function to get the conversational agent
 @cl.cache
-def obter_agente(recuperador):
-    pipeline = DocumentSearchPipeline(recuperador)
-    ferramenta_pesquisa = Tool(
+def get_agent(retriever):
+    pipeline = DocumentSearchPipeline(retriever)
+    search_tool = Tool(
         name="seven_wonders_search",
         pipeline_or_node=pipeline,
-        description="útil quando você precisa responder perguntas sobre as sete maravilhas do mundo: Colosso de Rodes, Estátua de Zeus, Grande Pirâmide de Gizé, Mausoléu de Halicarnasso, Templo de Ártemis, Farol de Alexandria e Jardins Suspensos da Babilônia",
+        description="useful for when you need to answer questions about the seven wonders of the world: Colossus of Rhodes, Statue of Zeus, Great Pyramid of Giza, Mausoleum at Halicarnassus, Temple of Artemis, Lighthouse of Alexandria, and Hanging Gardens of Babylon",
         output_variable="documents",
     )
-    nó_prompt_conversacional = PromptNode(
+    conversational_agent_prompt_node = PromptNode(
         "gpt-3.5-turbo",
-        api_key=openai_api_key,
+        api_key=os.getenv('OPENAI_API_KEY'),
         max_length=256,
-        stop_words=["Observação:"],
+        stop_words=["Observation:"],
     )
-    memoria = ConversationSummaryMemory(
-        nó_prompt_conversacional,
+    memory = ConversationSummaryMemory(
+        conversational_agent_prompt_node,
         prompt_template="deepset/conversational-summary",
         summary_frequency=3,
     )
-    prompt_agente = """
-    Aqui vai o script completo. Sinta-se à vontade para fazer ajustes conforme necessário.
+    agent_prompt = """
+    Here goes the complete script. Feel free to make adjustments as needed.
     """
     return ConversationalAgent(
-        prompt_node=nó_prompt_conversacional,
-        memory=memoria,
-        prompt_template=prompt_agente,
-        tools=[ferramenta_pesquisa],
+        prompt_node=conversational_agent_prompt_node,
+        memory=memory,
+        prompt_template=agent_prompt,
+        tools=[search_tool],
     )
 
-# Inicializar o recuperador e o agente
-recuperador = obter_recuperador()
-agente = obter_agente(recuperador)
-cl.HaystackAgentCallbackHandler(agente)
+# Initialize the retriever and the agent
+retriever = get_retriever()
+agent = get_agent(retriever)
+cl.HaystackAgentCallbackHandler(agent)
 
-# Função para renomear o autor
+# Function to rename the author
 @cl.author_rename
-def renomear(orig_author: str):
-    dict_rename = {"custom-at-query-time": "Passo do Agente"}
-    return dict_rename.get(orig_author, orig_author)
+def rename(orig_author: str):
+    rename_dict = {"custom-at-query-time": "Agent Step"}
+    return rename_dict.get(orig_author, orig_author)
 
-# Função para iniciar a conversa
+# Function to start the conversation
 @cl.on_chat_start
-async def iniciar():
-    pergunta = "Como era a estátua de Rodes?"
-    await cl.Message(author="Usuário", content=pergunta).send()
-    resposta = await cl.make_async(agente.run)(pergunta)
-    await cl.Message(author="Agente", content=resposta["answers"][0].answer).send()
+async def init():
+    question = "What did Rhodes Statue look like?"
+    await cl.Message(author="User", content=question).send()
+    response = await cl.make_async(agent.run)(question)
+    await cl.Message(author="Agent", content=response["answers"][0].answer).send()
 
-# Função para responder às mensagens do usuário
+# Function to respond to user messages
 @cl.on_message
-async def responder(mensagem: cl.Message):
-    resposta = await cl.make_async(agente.run)(mensagem.content)
-    await cl.Message(author="Agente", content=resposta["answers"][0].answer).send()
+async def answer(message: cl.Message):
+    response = await cl.make_async(agent.run)(message.content)
+    await cl.Message(author="Agent", content=response["answers"][0].answer).send()
