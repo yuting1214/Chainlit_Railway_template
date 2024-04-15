@@ -1,4 +1,5 @@
-pip install openai
-pip install python-dotenv
-pip install chainlit
-pip install chainlit
+openai
+python-dotenv
+chainlit
+chainlit
+haystack-ai
