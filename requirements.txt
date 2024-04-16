@@ -1,3 +1,5 @@
 openai
 python-dotenv
 chainlit
+chainlit
+haystack-ai
