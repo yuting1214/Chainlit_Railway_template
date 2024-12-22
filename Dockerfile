@@ -13,9 +13,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# (Optional) Install Poetry for dependency management
-# RUN pip install poetry
-
 # Copy only requirements.txt first to leverage Docker cache
 COPY requirements.txt .
 

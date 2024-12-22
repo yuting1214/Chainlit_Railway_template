@@ -94,3 +94,6 @@ environment/**
 !environment/__init__.py
 !environment/config.py
 
+# Chainlit
+.chainlit/
+chainlit.md
