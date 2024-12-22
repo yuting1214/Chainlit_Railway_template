@@ -44,4 +44,4 @@ COPY --from=builder /opt/venv /opt/venv
 COPY . /app
 
 # Command to run the Chainlit server using shell form for environment variable expansion
-CMD python -m chainlit run app.py -h 0.0.0.0 --port ${PORT}
+CMD python -m chainlit run app.py -h --host 0.0.0.0 --port ${PORT}
