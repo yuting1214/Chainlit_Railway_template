@@ -1,0 +1,11 @@
+[project]
+name = "chainlit-railway-template"
+version = "0.1.0"
+description = "Deploy production-ready Conversational AI applications with Railway in minutes, not weeks ⚡️"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "chainlit>=2.5.5",
+    "openai>=1.79.0",
+    "python-dotenv>=1.1.0",
+]

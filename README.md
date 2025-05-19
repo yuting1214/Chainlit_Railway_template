@@ -4,6 +4,8 @@
 
 [Chainlit](https://github.com/Chainlit/chainlit) is an open-source async Python framework which allows developers to build scalable Conversational AI or agentic applications.
 
+> **Requirements**: Python >= 3.10
+
 - ✅ ChatGPT-like application
 - ✅ Embedded Chatbot & Software Copilot
 - ✅ Custom frontend (build your own agentic experience)
